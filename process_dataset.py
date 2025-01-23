@@ -110,31 +110,31 @@ def combine_datasets():
         
         # 使用环境变量中的 token 加载数据集
         # 加载 Human-Like-DPO 数据集
-        dpo_dataset = load_dataset("HumanLLMs/Human-Like-DPO-Dataset", split="train", use_auth_token=hf_token)
+        dpo_dataset = load_dataset("HumanLLMs/Human-Like-DPO-Dataset", split="train", token=hf_token)
         datasets.append(dpo_dataset)
         logging.info("已加载 Human-Like-DPO 数据集")
         
         # 加载 awesome-chatgpt-prompts 数据集
-        prompts_dataset = load_dataset("fka/awesome-chatgpt-prompts", split="train", use_auth_token=hf_token)
+        prompts_dataset = load_dataset("fka/awesome-chatgpt-prompts", split="train", token=hf_token)
         datasets.append(prompts_dataset)
         logging.info("已加载 awesome-chatgpt-prompts 数据集")
         
         # 加载 agent-instruction 数据集
-        agent_dataset = load_dataset("jinaai/agent-instruction-dataset", split="train", use_auth_token=hf_token)
+        agent_dataset = load_dataset("jinaai/agent-instruction-dataset", split="train", token=hf_token)
         datasets.append(agent_dataset)
         logging.info("已加载 agent-instruction 数据集")
         
         # 加载 multimodal_textbook 数据集
-        textbook_dataset = load_dataset("DAMO-NLP-SG/multimodal_textbook", split="train", use_auth_token=hf_token)
+        textbook_dataset = load_dataset("DAMO-NLP-SG/multimodal_textbook", split="train", token=hf_token)
         datasets.append(textbook_dataset)
         logging.info("已加载 multimodal_textbook 数据集")
         
         # 加载原有的数据集
-        code_dataset = load_dataset("jinaai/code_exercises", split="train", use_auth_token=hf_token)
+        code_dataset = load_dataset("jinaai/code_exercises", split="train", token=hf_token)
         datasets.append(code_dataset)
         logging.info("已加载 code_exercises 数据集")
         
-        reader_dataset = load_dataset("jinaai/ReaderLM-v2", split="train", use_auth_token=hf_token)
+        reader_dataset = load_dataset("jinaai/ReaderLM-v2", split="train", token=hf_token)
         datasets.append(reader_dataset)
         logging.info("已加载 ReaderLM-v2 数据集")
         
