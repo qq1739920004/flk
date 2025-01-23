@@ -109,12 +109,12 @@ def combine_datasets():
         datasets = []
         
         try:
-            # 加载 stocktwits-crypto 数据集（社交媒体分析）
-            stocktwits_dataset = load_dataset("ElKulako/stocktwits-crypto", split="train", token=hf_token)
-            datasets.append(stocktwits_dataset)
-            logging.info("已加载 ElKulako/stocktwits-crypto 数据集")
+            # 加载 marketing_social_media 数据集（营销和社交媒体分析）
+            marketing_dataset = load_dataset("RafaM97/marketing_social_media", split="train", token=hf_token)
+            datasets.append(marketing_dataset)
+            logging.info("已加载 RafaM97/marketing_social_media 数据集")
         except Exception as e:
-            logging.error(f"加载 stocktwits-crypto 数据集失败: {str(e)}")
+            logging.error(f"加载 marketing_social_media 数据集失败: {str(e)}")
             
         try:
             # 加载 cryptonews-articles 数据集（新闻分析）
