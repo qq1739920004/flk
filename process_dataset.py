@@ -109,32 +109,32 @@ def combine_datasets():
         datasets = []
         
         try:
-            # 加载 Human-Like-DPO 数据集
-            dpo_dataset = load_dataset("HumanLLMs/Human-Like-DPO-Dataset", split="train", token=hf_token)
-            datasets.append(dpo_dataset)
-            logging.info("已加载 Human-Like-DPO 数据集")
+            # 只加载 glaive function calling 数据集
+            glaive_dataset = load_dataset("glaiveai/glaive-function-calling-v2", split="train", token=hf_token)
+            datasets.append(glaive_dataset)
+            logging.info("已加载 glaive-function-calling 数据集")
         except Exception as e:
-            logging.error(f"加载 Human-Like-DPO 数据集失败: {str(e)}")
+            logging.error(f"加载 glaive-function-calling 数据集失败: {str(e)}")
         
-        try:
-            # 加载 awesome-chatgpt-prompts 数据集
-            prompts_dataset = load_dataset("fka/awesome-chatgpt-prompts", split="train", token=hf_token)
-            datasets.append(prompts_dataset)
-            logging.info("已加载 awesome-chatgpt-prompts 数据集")
-        except Exception as e:
-            logging.error(f"加载 awesome-chatgpt-prompts 数据集失败: {str(e)}")
-        
-        try:
-            # 加载 multimodal_textbook 数据集
-            textbook_dataset = load_dataset("DAMO-NLP-SG/multimodal_textbook", split="train", token=hf_token)
-            datasets.append(textbook_dataset)
-            logging.info("已加载 multimodal_textbook 数据集")
-        except Exception as e:
-            logging.error(f"加载 multimodal_textbook 数据集失败: {str(e)}")
-        
+        # 如果数据集加载失败，使用本地示例数据
         if not datasets:
-            logging.error("没有成功加载任何数据集")
-            return None
+            logging.warning("glaive数据集加载失败，使用本地示例数据")
+            example_data = [
+                {
+                    "instruction": "分析这个地址的DeFi活动：0x742d35Cc6634C0532925a3b844Bc454e4438f44e，我想知道它在过去30天内的收益率和风险指标",
+                    "output": "根据分析，这个地址在DeFi上的活动情况如下：\n\n1. Aave协议活动：\n- 存款：10,000 USDC (3.5% APY) 和 5 ETH (2.1% APY)\n- 借款：5,000 DAI (4.2% APY)\n\n2. Uniswap流动性提供：\n- ETH/USDC池：价值20,000美元\n- 已赚取手续费：150美元\n\n风险指标：\n- 健康因子：1.8（安全范围内，>1.5为良好）\n- 清算阈值：80%\n- 波动性风险：中等\n- 无常损失风险：高\n\n总体年化收益率：5.2%"
+                },
+                {
+                    "instruction": "帮我分析这笔交易的gas使用情况：0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                    "output": "这笔交易的gas分析如下：\n\n1. Gas使用明细：\n- 基础gas费用：21,000\n- 合约调用gas：45,000\n- 存储操作gas：15,000\n总gas使用：81,000\n\n2. Gas价格：\n- 基础费用：25 Gwei\n- 优先费用：2 Gwei\n总gas价格：27 Gwei\n\n3. 总费用：0.002187 ETH (约 $4.50)\n\n4. 优化建议：\n- 可以通过批量处理减少gas使用\n- 建议在网络不拥堵时执行交易"
+                },
+                {
+                    "instruction": "我想部署一个ERC20代币合约，代币名称是'MyToken'，符号是'MTK'，总供应量是1000000",
+                    "output": "我将帮您部署ERC20代币合约。以下是部署详情：\n\n1. 合约参数：\n- 名称：MyToken\n- 符号：MTK\n- 小数位：18\n- 总供应量：1,000,000 MTK\n\n2. 部署网络：Ethereum主网\n\n3. 预估gas费用：\n- 合约部署约需要 800,000 gas\n- 当前gas价格：30 Gwei\n- 总费用约：0.024 ETH\n\n4. 安全提示：\n- 合约已包含权限控制\n- 实现了暂停功能\n- 添加了事件日志"
+                }
+            ]
+            from datasets import Dataset
+            datasets = [Dataset.from_list(example_data)]
             
         return datasets
     except Exception as e:
