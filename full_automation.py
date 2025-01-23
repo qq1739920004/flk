@@ -48,11 +48,40 @@ if __name__ == "__main__":
         model2size = {k: v for k, v in model2size.items() if v <= max_params}
         all_training_args = {k: v for k, v in all_training_args.items() if k in model2size}
         logger.info(f"Models within the max_params: {all_training_args.keys()}")
-        # download in chunks
+        
+        # 下载任务数据
         response = requests.get(data_url, stream=True)
         with open("data/demo_data.jsonl", "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
+        
+        # 处理额外的训练数据
+        logger.info("开始处理额外的训练数据...")
+        from process_dataset import process_dataset
+        if not process_dataset():
+            logger.error("处理额外训练数据失败")
+            sys.exit(1)
+        
+        # 合并数据集
+        logger.info("合并数据集...")
+        merged_data = []
+        
+        # 读取任务数据
+        with open("data/demo_data.jsonl", "r", encoding="utf-8") as f:
+            for line in f:
+                merged_data.append(line.strip())
+                
+        # 读取处理后的数据
+        with open("data/agent_training_data.jsonl", "r", encoding="utf-8") as f:
+            for line in f:
+                merged_data.append(line.strip())
+        
+        # 保存合并后的数据
+        with open("data/demo_data.jsonl", "w", encoding="utf-8") as f:
+            for line in merged_data:
+                f.write(line + "\n")
+        
+        logger.info(f"数据集合并完成，共 {len(merged_data)} 条数据")
 
         # train all feasible models and merge
         for model_id in all_training_args.keys():
