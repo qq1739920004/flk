@@ -158,6 +158,30 @@ FLOCK_API_KEY=$FLOCK_API_KEY
 HF_TOKEN=$HF_TOKEN
 HF_USERNAME=$HF_USERNAME
 EOL
+
+    # 创建启动脚本
+    cat > run_training_node.sh << EOL
+#!/bin/bash
+
+# 加载环境变量
+if [ -f .env ]; then
+    export \$(cat .env | xargs)
+fi
+
+# 激活 conda 环境
+source "\$HOME/miniconda/bin/activate" training-node
+
+# 启动训练脚本
+CUDA_VISIBLE_DEVICES=0 \\
+HF_TOKEN="\$HF_TOKEN" \\
+TASK_ID="\$TASK_ID" \\
+FLOCK_API_KEY="\$FLOCK_API_KEY" \\
+HF_USERNAME="\$HF_USERNAME" \\
+python full_automation.py
+EOL
+
+    # 添加执行权限
+    chmod +x run_training_node.sh
     
     # 创建并配置 PM2 配置文件
     cat > ecosystem.config.js << EOL
