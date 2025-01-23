@@ -109,12 +109,31 @@ def combine_datasets():
         datasets = []
         
         try:
-            # 加载 arcee-ai agent-data 数据集
-            agent_dataset = load_dataset("arcee-ai/agent-data", split="train", token=hf_token)
-            datasets.append(agent_dataset)
-            logging.info("已加载 arcee-ai/agent-data 数据集")
+            # 加载 stocktwits-crypto 数据集（社交媒体分析）
+            stocktwits_dataset = load_dataset("ElKulako/stocktwits-crypto", split="train", token=hf_token)
+            datasets.append(stocktwits_dataset)
+            logging.info("已加载 ElKulako/stocktwits-crypto 数据集")
         except Exception as e:
-            logging.error(f"加载 arcee-ai/agent-data 数据集失败: {str(e)}")
+            logging.error(f"加载 stocktwits-crypto 数据集失败: {str(e)}")
+            
+        try:
+            # 加载 cryptonews-articles 数据集（新闻分析）
+            news_dataset = load_dataset("SahandNZ/cryptonews-articles-with-price-momentum-labels", split="train", token=hf_token)
+            datasets.append(news_dataset)
+            logging.info("已加载 cryptonews-articles 数据集")
+        except Exception as e:
+            logging.error(f"加载 cryptonews-articles 数据集失败: {str(e)}")
+            
+        try:
+            # 加载 Crypto_Fundamental_News 数据集（基本面分析）
+            fundamental_dataset = load_dataset("arad1367/Crypto_Fundamental_News", split="train", token=hf_token)
+            datasets.append(fundamental_dataset)
+            logging.info("已加载 Crypto_Fundamental_News 数据集")
+        except Exception as e:
+            logging.error(f"加载 Crypto_Fundamental_News 数据集失败: {str(e)}")
+            
+        if not datasets:
+            logging.error("所有数据集加载失败")
             return None
             
         return datasets
