@@ -100,43 +100,41 @@ def get_blockchain_functions() -> List[Dict]:
 def combine_datasets():
     """组合多个数据集"""
     try:
-        datasets = []
-        
-        # 使用环境变量中的 token
-        token = os.getenv('HF_TOKEN')
-        if not token:
-            logging.error("请提供 HF_TOKEN 环境变量")
+        # 检查环境变量
+        hf_token = os.getenv('HF_TOKEN')
+        if not hf_token:
+            logging.error("未找到 HF_TOKEN 环境变量，请确保已设置")
             return None
             
-        # 加载数据集时使用 token
-        auth_token = {"use_auth_token": token}
+        datasets = []
         
+        # 使用环境变量中的 token 加载数据集
         # 加载 Human-Like-DPO 数据集
-        dpo_dataset = load_dataset("HumanLLMs/Human-Like-DPO-Dataset", split="train", **auth_token)
+        dpo_dataset = load_dataset("HumanLLMs/Human-Like-DPO-Dataset", split="train", use_auth_token=hf_token)
         datasets.append(dpo_dataset)
         logging.info("已加载 Human-Like-DPO 数据集")
         
         # 加载 awesome-chatgpt-prompts 数据集
-        prompts_dataset = load_dataset("fka/awesome-chatgpt-prompts", split="train", **auth_token)
+        prompts_dataset = load_dataset("fka/awesome-chatgpt-prompts", split="train", use_auth_token=hf_token)
         datasets.append(prompts_dataset)
         logging.info("已加载 awesome-chatgpt-prompts 数据集")
         
         # 加载 agent-instruction 数据集
-        agent_dataset = load_dataset("jinaai/agent-instruction-dataset", split="train", **auth_token)
+        agent_dataset = load_dataset("jinaai/agent-instruction-dataset", split="train", use_auth_token=hf_token)
         datasets.append(agent_dataset)
         logging.info("已加载 agent-instruction 数据集")
         
         # 加载 multimodal_textbook 数据集
-        textbook_dataset = load_dataset("DAMO-NLP-SG/multimodal_textbook", split="train", **auth_token)
+        textbook_dataset = load_dataset("DAMO-NLP-SG/multimodal_textbook", split="train", use_auth_token=hf_token)
         datasets.append(textbook_dataset)
         logging.info("已加载 multimodal_textbook 数据集")
         
         # 加载原有的数据集
-        code_dataset = load_dataset("jinaai/code_exercises", split="train", **auth_token)
+        code_dataset = load_dataset("jinaai/code_exercises", split="train", use_auth_token=hf_token)
         datasets.append(code_dataset)
         logging.info("已加载 code_exercises 数据集")
         
-        reader_dataset = load_dataset("jinaai/ReaderLM-v2", split="train", **auth_token)
+        reader_dataset = load_dataset("jinaai/ReaderLM-v2", split="train", use_auth_token=hf_token)
         datasets.append(reader_dataset)
         logging.info("已加载 ReaderLM-v2 数据集")
         
@@ -145,18 +143,10 @@ def combine_datasets():
         logging.error(f"加载数据集时出错: {str(e)}")
         return None
 
-def get_example_values():
-    """获取示例值，避免硬编码"""
-    return {
-        "example_address": "0x0000000000000000000000000000000000000000",
-        "example_contract": "0x0000000000000000000000000000000000000000",
-        "example_tx_hash": "0x0000000000000000000000000000000000000000000000000000000000000000"
-    }
-
 def process_dataset():
     try:
         os.makedirs('data', exist_ok=True)
-        os.makedirs('logs', exist_ok=True)
+        os.makedirs('logs', exist_ok=True)  # 确保日志目录存在
         
         hf_token = os.getenv('HF_TOKEN')
         if not hf_token:
@@ -172,30 +162,31 @@ def process_dataset():
         functions = get_blockchain_functions()
         processed_count = 0
         error_count = 0
-        example_values = get_example_values()
         
         with open('data/agent_training_data.jsonl', 'w', encoding='utf-8') as f:
             for dataset in datasets:
                 for item in dataset:
                     try:
+                        # 根据不同数据集格式获取指令和响应
                         instruction = (
                             item.get("instruction") or 
                             item.get("input") or 
                             item.get("question") or
-                            item.get("prompt") or
-                            item.get("text")
+                            item.get("prompt") or  # 适配 awesome-chatgpt-prompts
+                            item.get("text")  # 适配其他可能的格式
                         )
                         response = (
                             item.get("output") or 
                             item.get("response") or 
                             item.get("answer") or
-                            item.get("completion")
+                            item.get("completion")  # 适配 awesome-chatgpt-prompts
                         )
                         
                         if not instruction or not response:
                             error_count += 1
                             continue
                             
+                        # 创建对话格式
                         conversation = {
                             "conversations": [
                                 {"role": "user", "content": instruction},
@@ -203,9 +194,9 @@ def process_dataset():
                                 {"role": "function_call", "content": json.dumps({
                                     "name": random.choice([f["name"] for f in functions]),
                                     "arguments": {
-                                        "address": example_values["example_address"],
-                                        "contract_address": example_values["example_contract"],
-                                        "tx_hash": example_values["example_tx_hash"]
+                                        "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                                        "contract_address": "0x1234567890abcdef1234567890abcdef12345678",
+                                        "tx_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
                                     }
                                 })},
                                 {"role": "observation", "content": json.dumps({

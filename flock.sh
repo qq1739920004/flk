@@ -151,134 +151,41 @@ function install_train_node() {
     read -p "输入Hugging Face Token: " HF_TOKEN
     read -p "输入Hugging Face 用户名: " HF_USERNAME
     
-    # 创建数据处理脚本
-    echo "创建数据处理脚本..."
-    cat > process_dataset.py << 'EOL'
-from datasets import load_dataset
-import json
-import random
-import os
-import logging
-from typing import Dict, List
-import time
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('data/dataset_processing.log'),
-        logging.StreamHandler()
-    ]
-)
-
-def get_blockchain_functions() -> List[Dict]:
-    return [
-        {
-            "name": "get_eth_balance",
-            "description": "获取ETH余额",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {"type": "string", "description": "钱包地址"},
-                    "block_number": {"type": "string", "description": "区块高度，可选"}
-                },
-                "required": ["address"]
-            }
-        },
-        {
-            "name": "analyze_defi_risk",
-            "description": "分析DeFi投资组合风险",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {"type": "string", "description": "钱包地址"},
-                    "protocols": {"type": "array", "items": {"type": "string"}, "description": "要分析的协议列表"},
-                    "time_range": {"type": "string", "description": "分析时间范围"}
-                },
-                "required": ["address", "protocols"]
-            }
-        },
-        {
-            "name": "execute_swap",
-            "description": "在DEX上执行代币兑换",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "from_token": {"type": "string", "description": "源代币"},
-                    "to_token": {"type": "string", "description": "目标代币"},
-                    "amount": {"type": "string", "description": "兑换数量"},
-                    "slippage": {"type": "string", "description": "滑点限制"}
-                },
-                "required": ["from_token", "to_token", "amount"]
-            }
-        }
-    ]
-
-def process_dataset():
-    try:
-        os.makedirs('data', exist_ok=True)
-        hf_token = os.getenv('HF_TOKEN')
-        if not hf_token:
-            logging.error("未找到HF_TOKEN环境变量")
-            return False
-        
-        logging.info("开始下载和处理数据集...")
-        dataset = load_dataset("tatsu-lab/alpaca", use_auth_token=hf_token)
-        functions = get_blockchain_functions()
-        
-        with open('data/agent_training_data.jsonl', 'w', encoding='utf-8') as f:
-            for item in list(dataset['train'])[:5000]:
-                conversation = {
-                    "conversations": [
-                        {"role": "user", "content": item["instruction"]},
-                        {"role": "assistant", "content": "我将帮您完成这个任务。"},
-                        {"role": "function_call", "content": json.dumps({
-                            "name": random.choice([f["name"] for f in functions]),
-                            "arguments": {"address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"}
-                        })},
-                        {"role": "observation", "content": json.dumps({"result": item["output"], "status": "success"})},
-                        {"role": "assistant", "content": item["output"]}
-                    ],
-                    "tools": json.dumps(functions),
-                    "system": "你是一个专业的区块链AI Agent，擅长分析和执行各种区块链操作。"
-                }
-                f.write(json.dumps(conversation, ensure_ascii=False) + '\n')
-        
-        logging.info("数据处理完成！")
-        return True
-    except Exception as e:
-        logging.error(f"处理数据集时出错: {str(e)}")
-        return False
-
-if __name__ == "__main__":
-    process_dataset()
+    # 创建环境变量文件
+    cat > .env << EOL
+TASK_ID=$TASK_ID
+FLOCK_API_KEY=$FLOCK_API_KEY
+HF_TOKEN=$HF_TOKEN
+HF_USERNAME=$HF_USERNAME
 EOL
     
-    # 创建运行脚本
-    cat << EOF > run_training_node.sh
-#!/bin/bash
-source "$MINICONDA_PATH/bin/activate" training-node
-
-# 首先处理数据集
-echo "开始处理训练数据集..."
-python process_dataset.py
-
-# 如果数据处理成功，启动训练节点
-if [ $? -eq 0 ]; then
-    echo "数据处理完成，启动训练节点..."
-    TASK_ID=$TASK_ID FLOCK_API_KEY="$FLOCK_API_KEY" HF_TOKEN="$HF_TOKEN" CUDA_VISIBLE_DEVICES=0 HF_USERNAME="$HF_USERNAME" python full_automation.py
-else
-    echo "数据处理失败，请检查日志文件。"
-    exit 1
-fi
-EOF
+    # 创建并配置 PM2 配置文件
+    cat > ecosystem.config.js << EOL
+module.exports = {
+  apps: [{
+    name: "flock-training-node",
+    script: "./run_training_node.sh",
+    env: {
+      HF_TOKEN: process.env.HF_TOKEN,
+      TASK_ID: process.env.TASK_ID,
+      FLOCK_API_KEY: process.env.FLOCK_API_KEY,
+      HF_USERNAME: process.env.HF_USERNAME,
+      CUDA_VISIBLE_DEVICES: "0"
+    },
+    error_file: "logs/err.log",
+    out_file: "logs/out.log",
+    time: true
+  }]
+}
+EOL
     
-    chmod +x run_training_node.sh
+    # 创建日志目录
+    mkdir -p logs
     
-    # 使用 PM2 启动训练节点
-    pm2 start run_training_node.sh --name "flock-training-node" -- start && pm2 save && pm2 startup
+    # 启动训练节点
+    pm2 start ecosystem.config.js && pm2 save && pm2 startup
     
-    echo "训练节点已启动。您可以使用 'pm2 logs flock-training-node' 查看日志。"
+    echo "训练节点已启动，使用 'pm2 logs flock-training-node' 查看日志"
 }
 
 function update_task_id() {
