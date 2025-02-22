@@ -16,18 +16,58 @@ logging.basicConfig(
 )
 
 def get_blockchain_functions() -> List[Dict]:
-    """获取区块链相关的函数定义"""
+    """获取区块链和玄学相关的函数定义"""
     return [
         {
-            "name": "get_eth_balance",
-            "description": "获取ETH余额",
+            "name": "analyze_bazi",
+            "description": "分析八字与项目发展",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "address": {"type": "string", "description": "钱包地址"},
-                    "block_number": {"type": "string", "description": "区块高度，可选"}
+                    "project_name": {"type": "string", "description": "项目名称"},
+                    "launch_time": {"type": "string", "description": "项目启动时间"},
+                    "analysis_type": {"type": "string", "description": "分析类型 (development/token/team)"}
                 },
-                "required": ["address"]
+                "required": ["project_name", "launch_time"]
+            }
+        },
+        {
+            "name": "read_tarot",
+            "description": "塔罗牌预测",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string", "description": "预测问题"},
+                    "spread_type": {"type": "string", "description": "牌阵类型"},
+                    "focus_area": {"type": "string", "description": "关注领域 (investment/development/partnership)"}
+                },
+                "required": ["question"]
+            }
+        },
+        {
+            "name": "consult_iching",
+            "description": "易经卦象解读",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string", "description": "咨询问题"},
+                    "hexagram": {"type": "string", "description": "卦象"},
+                    "aspect": {"type": "string", "description": "关注方面 (market/technology/timing)"}
+                },
+                "required": ["question"]
+            }
+        },
+        {
+            "name": "analyze_astro",
+            "description": "星盘分析",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "chart_time": {"type": "string", "description": "分析时间"},
+                    "aspect_type": {"type": "string", "description": "相位类型"},
+                    "focus": {"type": "string", "description": "关注重点 (market_trend/token_price/community)"}
+                },
+                "required": ["chart_time"]
             }
         },
         {
@@ -42,65 +82,12 @@ def get_blockchain_functions() -> List[Dict]:
                 },
                 "required": ["address", "protocols"]
             }
-        },
-        {
-            "name": "execute_swap",
-            "description": "在DEX上执行代币兑换",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "from_token": {"type": "string", "description": "源代币"},
-                    "to_token": {"type": "string", "description": "目标代币"},
-                    "amount": {"type": "string", "description": "兑换数量"},
-                    "slippage": {"type": "string", "description": "滑点限制"}
-                },
-                "required": ["from_token", "to_token", "amount"]
-            }
-        },
-        {
-            "name": "monitor_contract",
-            "description": "监控智能合约活动",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "contract_address": {"type": "string", "description": "合约地址"},
-                    "event_types": {"type": "array", "items": {"type": "string"}, "description": "要监控的事件类型"},
-                    "threshold": {"type": "string", "description": "警报阈值"}
-                },
-                "required": ["contract_address"]
-            }
-        },
-        {
-            "name": "deploy_contract",
-            "description": "部署智能合约",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "contract_type": {"type": "string", "description": "合约类型 (ERC20/ERC721/Custom)"},
-                    "constructor_args": {"type": "object", "description": "构造函数参数"},
-                    "network": {"type": "string", "description": "目标网络"}
-                },
-                "required": ["contract_type", "constructor_args"]
-            }
-        },
-        {
-            "name": "analyze_transaction",
-            "description": "分析交易详情",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "tx_hash": {"type": "string", "description": "交易哈希"},
-                    "analysis_type": {"type": "string", "description": "分析类型 (gas/trace/impact)"}
-                },
-                "required": ["tx_hash"]
-            }
         }
     ]
 
 def combine_datasets():
     """组合多个数据集"""
     try:
-        # 检查环境变量
         hf_token = os.getenv('HF_TOKEN')
         if not hf_token:
             logging.error("未找到 HF_TOKEN 环境变量，请确保已设置")
@@ -109,28 +96,44 @@ def combine_datasets():
         datasets = []
         
         try:
-            # 加载 marketing_social_media 数据集（营销和社交媒体分析）
-            marketing_dataset = load_dataset("RafaM97/marketing_social_media", split="train", token=hf_token)
-            datasets.append(marketing_dataset)
-            logging.info("已加载 RafaM97/marketing_social_media 数据集")
+            # 加载塔罗牌数据集
+            tarot_dataset = load_dataset("astro-gpt/tarot-readings", split="train", token=hf_token)
+            datasets.append(tarot_dataset)
+            logging.info("已加载塔罗牌数据集")
         except Exception as e:
-            logging.error(f"加载 marketing_social_media 数据集失败: {str(e)}")
+            logging.error(f"加载塔罗牌数据集失败: {str(e)}")
             
         try:
-            # 加载 cryptonews-articles 数据集（新闻分析）
+            # 加载八字数据集
+            bazi_dataset = load_dataset("astro-gpt/bazi-analysis", split="train", token=hf_token)
+            datasets.append(bazi_dataset)
+            logging.info("已加载八字数据集")
+        except Exception as e:
+            logging.error(f"加载八字数据集失败: {str(e)}")
+            
+        try:
+            # 加载易经数据集
+            iching_dataset = load_dataset("astro-gpt/iching-readings", split="train", token=hf_token)
+            datasets.append(iching_dataset)
+            logging.info("已加载易经数据集")
+        except Exception as e:
+            logging.error(f"加载易经数据集失败: {str(e)}")
+            
+        try:
+            # 加载加密货币新闻数据集
             news_dataset = load_dataset("SahandNZ/cryptonews-articles-with-price-momentum-labels", split="train", token=hf_token)
             datasets.append(news_dataset)
-            logging.info("已加载 cryptonews-articles 数据集")
+            logging.info("已加载加密货币新闻数据集")
         except Exception as e:
-            logging.error(f"加载 cryptonews-articles 数据集失败: {str(e)}")
+            logging.error(f"加载加密货币新闻数据集失败: {str(e)}")
             
         try:
-            # 加载 Crypto_Fundamental_News 数据集（基本面分析）
+            # 加载加密货币基本面数据集
             fundamental_dataset = load_dataset("arad1367/Crypto_Fundamental_News", split="train", token=hf_token)
             datasets.append(fundamental_dataset)
-            logging.info("已加载 Crypto_Fundamental_News 数据集")
+            logging.info("已加载加密货币基本面数据集")
         except Exception as e:
-            logging.error(f"加载 Crypto_Fundamental_News 数据集失败: {str(e)}")
+            logging.error(f"加载加密货币基本面数据集失败: {str(e)}")
             
         if not datasets:
             logging.error("所有数据集加载失败")
@@ -144,7 +147,7 @@ def combine_datasets():
 def process_dataset():
     try:
         os.makedirs('data', exist_ok=True)
-        os.makedirs('logs', exist_ok=True)  # 确保日志目录存在
+        os.makedirs('logs', exist_ok=True)
         
         hf_token = os.getenv('HF_TOKEN')
         if not hf_token:
@@ -170,14 +173,16 @@ def process_dataset():
                             item.get("instruction") or 
                             item.get("input") or 
                             item.get("question") or
-                            item.get("prompt") or  # 适配 awesome-chatgpt-prompts
-                            item.get("text")  # 适配其他可能的格式
+                            item.get("prompt") or
+                            item.get("text")
                         )
                         response = (
                             item.get("output") or 
                             item.get("response") or 
                             item.get("answer") or
-                            item.get("completion")  # 适配 awesome-chatgpt-prompts
+                            item.get("reading") or  # 适配占卜类数据集
+                            item.get("analysis") or # 适配分析类数据集
+                            item.get("interpretation")  # 适配易经解读
                         )
                         
                         if not instruction or not response:
@@ -188,13 +193,15 @@ def process_dataset():
                         conversation = {
                             "conversations": [
                                 {"role": "user", "content": instruction},
-                                {"role": "assistant", "content": "我将帮您处理这个请求。"},
+                                {"role": "assistant", "content": "我将为您提供玄学与市场分析的综合解读。"},
                                 {"role": "function_call", "content": json.dumps({
                                     "name": random.choice([f["name"] for f in functions]),
                                     "arguments": {
-                                        "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-                                        "contract_address": "0x1234567890abcdef1234567890abcdef12345678",
-                                        "tx_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+                                        "project_name": "Example Project",
+                                        "launch_time": "2024-03-15 14:30:00",
+                                        "question": instruction,
+                                        "chart_time": "2024-03-15 14:30:00",
+                                        "focus": "market_trend"
                                     }
                                 })},
                                 {"role": "observation", "content": json.dumps({
@@ -205,7 +212,7 @@ def process_dataset():
                                 {"role": "assistant", "content": response}
                             ],
                             "tools": json.dumps(functions),
-                            "system": "你是一个专业的区块链AI Agent，擅长分析和执行各种区块链操作。你会仔细评估每个操作的风险，并确保用户资产的安全。"
+                            "system": "你是一个专业的区块链AI Agent，擅长结合玄学（八字、易经、塔罗牌、星座）和市场分析来提供独特的见解。你会谨慎评估每个预测和建议，确保分析的全面性和可靠性。"
                         }
                         
                         f.write(json.dumps(conversation, ensure_ascii=False) + '\n')
