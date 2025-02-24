@@ -96,28 +96,12 @@ def combine_datasets():
         datasets = []
         
         try:
-            # 加载塔罗牌数据集
-            tarot_dataset = load_dataset("astro-gpt/tarot-readings", split="train", token=hf_token)
-            datasets.append(tarot_dataset)
-            logging.info("已加载塔罗牌数据集")
+            # 加载基础对话数据集
+            base_dataset = load_dataset("tatsu-lab/alpaca", split="train", token=hf_token)
+            datasets.append(base_dataset)
+            logging.info("已加载基础对话数据集")
         except Exception as e:
-            logging.error(f"加载塔罗牌数据集失败: {str(e)}")
-            
-        try:
-            # 加载八字数据集
-            bazi_dataset = load_dataset("astro-gpt/bazi-analysis", split="train", token=hf_token)
-            datasets.append(bazi_dataset)
-            logging.info("已加载八字数据集")
-        except Exception as e:
-            logging.error(f"加载八字数据集失败: {str(e)}")
-            
-        try:
-            # 加载易经数据集
-            iching_dataset = load_dataset("astro-gpt/iching-readings", split="train", token=hf_token)
-            datasets.append(iching_dataset)
-            logging.info("已加载易经数据集")
-        except Exception as e:
-            logging.error(f"加载易经数据集失败: {str(e)}")
+            logging.error(f"加载基础对话数据集失败: {str(e)}")
             
         try:
             # 加载加密货币新闻数据集
@@ -169,21 +153,21 @@ def process_dataset():
                 for item in dataset:
                     try:
                         # 根据不同数据集格式获取指令和响应
-                        instruction = (
-                            item.get("instruction") or 
-                            item.get("input") or 
-                            item.get("question") or
-                            item.get("prompt") or
-                            item.get("text")
-                        )
-                        response = (
-                            item.get("output") or 
-                            item.get("response") or 
-                            item.get("answer") or
-                            item.get("reading") or  # 适配占卜类数据集
-                            item.get("analysis") or # 适配分析类数据集
-                            item.get("interpretation")  # 适配易经解读
-                        )
+                        instruction = None
+                        response = None
+                        
+                        # 处理基础对话数据集
+                        if "instruction" in item and "output" in item:
+                            instruction = item["instruction"]
+                            response = item["output"]
+                        # 处理新闻数据集
+                        elif "text" in item:
+                            instruction = f"分析这条加密货币新闻的市场影响：{item['text'][:200]}"
+                            response = f"根据新闻内容，结合玄学分析，我认为这个消息对市场的影响是..."
+                        # 处理基本面数据集
+                        elif "news" in item:
+                            instruction = f"请分析这个加密货币项目的基本面：{item['news'][:200]}"
+                            response = f"从八字和星盘分析来看，这个项目的发展趋势..."
                         
                         if not instruction or not response:
                             error_count += 1
