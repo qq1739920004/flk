@@ -103,22 +103,6 @@ def combine_datasets():
         except Exception as e:
             logging.error(f"加载基础对话数据集失败: {str(e)}")
             
-        try:
-            # 加载加密货币新闻数据集
-            news_dataset = load_dataset("SahandNZ/cryptonews-articles-with-price-momentum-labels", split="train", token=hf_token)
-            datasets.append(news_dataset)
-            logging.info("已加载加密货币新闻数据集")
-        except Exception as e:
-            logging.error(f"加载加密货币新闻数据集失败: {str(e)}")
-            
-        try:
-            # 加载加密货币基本面数据集
-            fundamental_dataset = load_dataset("arad1367/Crypto_Fundamental_News", split="train", token=hf_token)
-            datasets.append(fundamental_dataset)
-            logging.info("已加载加密货币基本面数据集")
-        except Exception as e:
-            logging.error(f"加载加密货币基本面数据集失败: {str(e)}")
-            
         if not datasets:
             logging.error("所有数据集加载失败")
             return None
@@ -160,14 +144,6 @@ def process_dataset():
                         if "instruction" in item and "output" in item:
                             instruction = item["instruction"]
                             response = item["output"]
-                        # 处理新闻数据集
-                        elif "text" in item:
-                            instruction = f"分析这条加密货币新闻的市场影响：{item['text'][:200]}"
-                            response = f"根据新闻内容，结合玄学分析，我认为这个消息对市场的影响是..."
-                        # 处理基本面数据集
-                        elif "news" in item:
-                            instruction = f"请分析这个加密货币项目的基本面：{item['news'][:200]}"
-                            response = f"从八字和星盘分析来看，这个项目的发展趋势..."
                         
                         if not instruction or not response:
                             error_count += 1
