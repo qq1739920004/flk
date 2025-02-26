@@ -92,21 +92,22 @@ def combine_datasets():
         if not hf_token:
             logging.error("未找到 HF_TOKEN 环境变量，请确保已设置")
             return None
-            
+        
         datasets = []
         
-        # 移除 Hugging Face 数据集的加载逻辑
-        # try:
-        #     base_dataset = load_dataset("tatsu-lab/alpaca", split="train", token=hf_token)
-        #     datasets.append(base_dataset)
-        #     logging.info("已加载基础对话数据集")
-        # except Exception as e:
-        #     logging.error(f"加载基础对话数据集失败: {str(e)}")
+        # 只加载基础对话数据集
+        try:
+            base_dataset = load_dataset("tatsu-lab/alpaca", split="train", token=hf_token)
+            datasets.append(base_dataset)
+            logging.info("已加载基础对话数据集")
+        except Exception as e:
+            logging.error(f"加载基础对话数据集失败: {str(e)}")
+            return None
         
         if not datasets:
             logging.error("所有数据集加载失败")
             return None
-            
+        
         return datasets
     except Exception as e:
         logging.error(f"加载数据集时出错: {str(e)}")
@@ -144,6 +145,14 @@ def process_dataset():
                         if "instruction" in item and "output" in item:
                             instruction = item["instruction"]
                             response = item["output"]
+                        # 处理新闻数据集
+                        elif "text" in item:
+                            instruction = f"分析这条加密货币新闻的市场影响：{item['text'][:200]}"
+                            response = f"根据新闻内容，结合玄学分析，我认为这个消息对市场的影响是..."
+                        # 处理基本面数据集
+                        elif "news" in item:
+                            instruction = f"请分析这个加密货币项目的基本面：{item['news'][:200]}"
+                            response = f"从八字和星盘分析来看，这个项目的发展趋势..."
                         
                         if not instruction or not response:
                             error_count += 1
