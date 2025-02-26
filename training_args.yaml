@@ -1,15 +1,15 @@
 # 01-ai/Yi-1.5-9B:
-#   per_device_train_batch_size: 2
+#   per_device_train_batch_size: 4
 #   gradient_accumulation_steps: 4
-#   num_train_epochs: 2
+#   num_train_epochs: 3
 #   lora_rank: 16
 #   lora_alpha: 32
 #   lora_dropout: 0.1
 
 # HuggingFaceH4/zephyr-7b-beta:
-#   per_device_train_batch_size: 2
+#   per_device_train_batch_size: 4
 #   gradient_accumulation_steps: 4
-#   num_train_epochs: 2
+#   num_train_epochs: 3
 #   lora_rank: 16
 #   lora_alpha: 32
 #   lora_dropout: 0.1
@@ -17,15 +17,15 @@
 # Qwen/Qwen1.5-1.8B:
 #   per_device_train_batch_size: 4
 #   gradient_accumulation_steps: 4
-#   num_train_epochs: 2
+#   num_train_epochs: 3
 #   lora_rank: 16
 #   lora_alpha: 32
 #   lora_dropout: 0.1
 
 # Qwen/Qwen1.5-7B:
-#   per_device_train_batch_size: 2
+#   per_device_train_batch_size: 4
 #   gradient_accumulation_steps: 4
-#   num_train_epochs: 2
+#   num_train_epochs: 3
 #   lora_rank: 16
 #   lora_alpha: 32
 #   lora_dropout: 0.1
@@ -33,23 +33,23 @@
 # google/gemma-2b:
 #   per_device_train_batch_size: 4
 #   gradient_accumulation_steps: 4
-#   num_train_epochs: 2
+#   num_train_epochs: 3
 #   lora_rank: 16
 #   lora_alpha: 32
 #   lora_dropout: 0.1
 
 # google/gemma-7b:
-#   per_device_train_batch_size: 2
+#   per_device_train_batch_size: 4
 #   gradient_accumulation_steps: 4
-#   num_train_epochs: 2
+#   num_train_epochs: 3
 #   lora_rank: 16
 #   lora_alpha: 32
 #   lora_dropout: 0.1
 
 microsoft/Phi-3-mini-4k-instruct:
-  per_device_train_batch_size: 1
+  per_device_train_batch_size: 2
   gradient_accumulation_steps: 6
-  num_train_epochs: 12
+  num_train_epochs: 6
   lora_rank: 32
   lora_alpha: 64
   lora_dropout: 0.01
