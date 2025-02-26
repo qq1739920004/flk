@@ -55,13 +55,6 @@ if __name__ == "__main__":
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
         
-        # 处理额外的训练数据
-        logger.info("开始处理额外的训练数据...")
-        from process_dataset import process_dataset
-        if not process_dataset():
-            logger.error("处理额外训练数据失败")
-            sys.exit(1)
-        
         # 合并数据集
         logger.info("合并数据集...")
         merged_data = []
