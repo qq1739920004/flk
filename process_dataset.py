@@ -95,14 +95,14 @@ def combine_datasets():
             
         datasets = []
         
-        try:
-            # 加载基础对话数据集
-            base_dataset = load_dataset("tatsu-lab/alpaca", split="train", token=hf_token)
-            datasets.append(base_dataset)
-            logging.info("已加载基础对话数据集")
-        except Exception as e:
-            logging.error(f"加载基础对话数据集失败: {str(e)}")
-            
+        # 移除 Hugging Face 数据集的加载逻辑
+        # try:
+        #     base_dataset = load_dataset("tatsu-lab/alpaca", split="train", token=hf_token)
+        #     datasets.append(base_dataset)
+        #     logging.info("已加载基础对话数据集")
+        # except Exception as e:
+        #     logging.error(f"加载基础对话数据集失败: {str(e)}")
+        
         if not datasets:
             logging.error("所有数据集加载失败")
             return None
