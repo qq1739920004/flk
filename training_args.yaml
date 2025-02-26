@@ -48,7 +48,7 @@
 
 microsoft/Phi-3-mini-4k-instruct:
   per_device_train_batch_size: 2
-  gradient_accumulation_steps: 6
+  gradient_accumulation_steps: 4
   num_train_epochs: 2
   lora_rank: 32
   lora_alpha: 64
